@@ -1,74 +1,64 @@
 package com.example.pawe.firstdb;
 
-import android.content.ContentValues;
+import android.app.DatePickerDialog;
 import android.content.Intent;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
-import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
-import android.net.Uri;
-import android.os.Environment;
-import android.provider.MediaStore;
-import android.support.v4.content.FileProvider;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.text.TextUtils;
 import android.util.Log;
 import android.view.View;
 import android.widget.Button;
+import android.widget.DatePicker;
 import android.widget.EditText;
-import android.widget.ImageView;
+import android.widget.Toast;
 
-import java.io.File;
-import java.io.IOException;
-import java.text.SimpleDateFormat;
+import java.util.Calendar;
 import java.util.Date;
 
 public class AddUserActivity extends AppCompatActivity {
-    static final int REQUEST_IMAGE_CAPTURE = 1;
-    private String photoPath;
-    private String oldPhotoPath;
+    private final String TAG = "AddUserActivity";
     Boolean flag;
     DBDbHelper mDbHelper = new DBDbHelper(this);
+    EditText editTextFirstName;
+    EditText editTextLastName;
+    EditText editTextDate;
+    DatePickerDialog datePickerDialog;
+    int day;
+    int month;
+    int year;
+    boolean isDateChanged = false;
     SQLiteDatabase db;
+    Intent intent;
     Cursor cursor;
-    int id;
+    Long id;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_add_user);
-    }
-
-    @Override
-    protected void onStart() {
-        super.onStart();
-    }
-
-    @Override
-    protected void onResume() {
-        super.onResume();
-        Intent intent = getIntent();
-        flag = intent.getBooleanExtra(MainActivity.EXTRA_MESSAGE,false);
+        intent = getIntent();
+        flag = intent.getBooleanExtra(MainActivity.ISEDIT_EXTRA,false);
         if(flag){
             db = mDbHelper.getReadableDatabase();
-            Button bt = (Button)findViewById(R.id.buttonDodaj);
+            Button bt = (Button)findViewById(R.id.button_addUser);
             bt.setText("Zaktualizuj");
-            EditText etImie = (EditText)findViewById(R.id.editTextImie);
-            EditText etWiek = (EditText)findViewById(R.id.editTextWiek);
-            ImageView ivZdj = (ImageView)findViewById(R.id.imageViewZdj);
-            id = intent.getIntExtra(MainActivity.EDIT_ID,0);
+            editTextFirstName = (EditText)findViewById(R.id.editText_firstName);
+            editTextLastName = (EditText)findViewById(R.id.editText_lastName);
+            editTextDate = (EditText) findViewById(R.id.editText_date);
+            id = intent.getLongExtra(MainActivity.EDIT_ID_EXTRA,-1);
             SQLiteDatabase db = mDbHelper.getReadableDatabase();
             String[] projection = {
                     DBContract.DB._ID,
-                    DBContract.DB.COLUMN_IMIE,
-                    DBContract.DB.COLUMN_WIEK,
-                    DBContract.DB.COLUMN_IMAGE_PATH
+                    DBContract.DB.COLUMN_FIRSTNAME,
+                    DBContract.DB.COLUMN_LASTNAME,
+                    DBContract.DB.COLUMN_DATE
             };
             String selection = DBContract.DB._ID + " = ?";
-            String[] selectionArgs = { Integer.toString(id) };
+            String[] selectionArgs = { Long.toString(id) };
             String sortOrder = DBContract.DB._ID + " DESC";
             cursor = db.query(
-                    DBContract.DB.TABLE__OOSOBY,
+                    DBContract.DB.TABLE_PERSONS,
                     projection,
                     selection,
                     selectionArgs,
@@ -77,99 +67,76 @@ public class AddUserActivity extends AppCompatActivity {
                     sortOrder
             );
             cursor.moveToFirst();
-            Log.d("cursor 1","sss");
-            etImie.setText(cursor.getString(cursor.getColumnIndex(DBContract.DB.COLUMN_IMIE)));
-            etWiek.setText(Integer.toString(cursor.getInt(cursor.getColumnIndex(DBContract.DB.COLUMN_WIEK))));
-            oldPhotoPath = cursor.getString(cursor.getColumnIndex(DBContract.DB.COLUMN_IMAGE_PATH));
-            photoPath = oldPhotoPath;
-            Bitmap bm = BitmapFactory.decodeFile(cursor.getString(cursor.getColumnIndex(DBContract.DB.COLUMN_IMAGE_PATH)));
-            ivZdj.setImageBitmap(bm);
-
+            editTextFirstName.setText(cursor.getString(cursor.getColumnIndex(DBContract.DB.COLUMN_FIRSTNAME)));
+            editTextLastName.setText(cursor.getString(cursor.getColumnIndex(DBContract.DB.COLUMN_LASTNAME)));
+            editTextDate.setText((cursor.getString(cursor.getColumnIndex(DBContract.DB.COLUMN_DATE))));
+            String [] date = editTextDate.getText().toString().split("-");
+            day = Integer.parseInt(date[0]);
+            month = Integer.parseInt(date[1])-1;
+            year = Integer.parseInt(date[2]);
+            datePickerDialog = new DatePickerDialog(this,onDateSetListener,year,month,day);
+            isDateChanged = true;
         }
+        else {
+            datePickerDialog = new DatePickerDialog(this, onDateSetListener, 2016, 0, 1);
+        }
+        editTextDate = (EditText) findViewById(R.id.editText_date);
+        editTextDate.setOnFocusChangeListener(new View.OnFocusChangeListener() {
+            @Override
+            public void onFocusChange(View v, boolean hasFocus) {
+                if (hasFocus) {
+                    datePickerDialog.show();
+                }
+            }
+        });
     }
-
-    public void takePhoto(View view) {
-        Intent takePhotoIntent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
-        if(takePhotoIntent.resolveActivity(getPackageManager())!= null){
-            File photoFile = null;
-            try {
-                photoFile = createImageFile();
-            }
-            catch (IOException ex) {
-
-            }
-            if(photoFile != null) {
-                Uri photoURI = FileProvider.getUriForFile(this,
-                        "com.example.android.fileprovider",
-                        photoFile);
-                takePhotoIntent.putExtra(MediaStore.EXTRA_OUTPUT,photoURI);
-                startActivityForResult(takePhotoIntent, REQUEST_IMAGE_CAPTURE);
-            }
-        }
+    @Override
+    protected void onStart() {
+        super.onStart();
     }
 
     @Override
-    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
-        super.onActivityResult(requestCode, resultCode, data);
-        if(requestCode == REQUEST_IMAGE_CAPTURE && resultCode == RESULT_OK){
-            Bitmap bm = BitmapFactory.decodeFile(photoPath);
-            ImageView imgV = (ImageView) findViewById(R.id.imageViewZdj);
-            imgV.setImageBitmap(bm);
-        }
+    protected void onResume() {
+        super.onResume();
+
     }
 
-    private File createImageFile() throws IOException {
-        String timeStamp = new SimpleDateFormat("yyyyMMdd_HHmmss").format(new Date());
-        String imageFileName = "JPEG_" + timeStamp + "_";
-        File storageDir = getExternalFilesDir((Environment.DIRECTORY_PICTURES));
-        File image = File.createTempFile(
-                imageFileName,
-                ".jpg",
-                storageDir
-        );
-        photoPath = image.getAbsolutePath();
-        return image;
-    }
-    public void addToDatabase(View view) {
-        EditText etImie = (EditText)findViewById(R.id.editTextImie);
-        EditText etWiek = (EditText)findViewById(R.id.editTextWiek);
-        String imie = etImie.getText().toString();
-        String wiek = etWiek.getText().toString();
-        Date currentDate = new Date();
-        long currentDateInMiliseconds = currentDate.getTime();
-        if(TextUtils.isEmpty(imie)){
-            etImie.setError("To pole nie może być puste");
+    private DatePickerDialog.OnDateSetListener onDateSetListener = new DatePickerDialog.OnDateSetListener() {
+        @Override
+        public void onDateSet(DatePicker view, int _year, int _month, int dayOfMonth) {
+            year = _year;
+            month = _month;
+            day = dayOfMonth;
+            editTextDate.setText(String.valueOf(day) + "-" + String.valueOf(month+1) + "-" + String.valueOf(year));
+            isDateChanged = true;
         }
-        else if(TextUtils.isEmpty(wiek)){
-            etWiek.setError("To pole nie może być puste");
+    };
+
+    public void continueClick(View view) {
+        editTextFirstName = (EditText) findViewById(R.id.editText_firstName);
+        editTextLastName = (EditText) findViewById(R.id.editText_lastName);
+        String firstName = editTextFirstName.getText().toString();
+        String lastName = editTextLastName.getText().toString();
+        String date = editTextDate.getText().toString();
+        if(TextUtils.isEmpty(firstName)){
+            //TODO zmienic na string resources (inne jezyki)
+            editTextFirstName.setError("To pole nie może być puste");
         }
-        else if (flag){
-            db = mDbHelper.getReadableDatabase();
-            ContentValues values = new ContentValues();
-            values.put(DBContract.DB._ID,id);
-            values.put(DBContract.DB.COLUMN_IMIE,imie);
-            values.put(DBContract.DB.COLUMN_WIEK, Integer.parseInt(wiek));
-            values.put(DBContract.DB.COLUMN_DATE,currentDateInMiliseconds);
-            values.put(DBContract.DB.COLUMN_IMAGE_PATH,photoPath);
-            String selection = DBContract.DB._ID +" LIKE ?";
-            String[] selectionArgs = {Integer.toString(id)};
-            db.update(DBContract.DB.TABLE__OOSOBY,values,selection,selectionArgs);
-            if(oldPhotoPath != photoPath)
-            {
-                File f = new File(oldPhotoPath);
-                f.delete();
-            }
-            finish();
+        else if(TextUtils.isEmpty(lastName)){
+            //TODO zmienic na string resources (inne jezyki)
+            editTextLastName.setError("To pole nie może być puste");
+        }
+        else if (!isDateChanged) {
+            editTextDate.setError("Ustaw datę urodzenia");
         }
         else{
-            db = mDbHelper.getWritableDatabase();
-            ContentValues values = new ContentValues();
-            values.put(DBContract.DB.COLUMN_IMIE,imie);
-            values.put(DBContract.DB.COLUMN_WIEK, Integer.parseInt(wiek));
-            values.put(DBContract.DB.COLUMN_DATE,currentDateInMiliseconds);
-            values.put(DBContract.DB.COLUMN_IMAGE_PATH,photoPath);
-            db.insert(DBContract.DB.TABLE__OOSOBY,null,values);
-            finish();
+            Intent _intent = new Intent(this,AddImageActivity.class);
+            _intent.putExtra(MainActivity.FIRST_NAME_EXTRA,firstName);
+            _intent.putExtra(MainActivity.LAST_NAME_EXTRA,lastName);
+            _intent.putExtra(MainActivity.DATE_EXTRA,date);
+            _intent.putExtra(MainActivity.ISEDIT_EXTRA,intent.getBooleanExtra(MainActivity.ISEDIT_EXTRA,false));
+            _intent.putExtra(MainActivity.EDIT_ID_EXTRA,intent.getLongExtra(MainActivity.EDIT_ID_EXTRA,-1));
+            startActivity(_intent);
         }
     }
 }

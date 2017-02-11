@@ -34,7 +34,8 @@
                 android:resource="@xml/file_paths" />
         </provider>
 
-        <activity android:name=".ViewImageActivity"></activity>
+        <activity android:name=".AddImageActivity" />
+        <activity android:name=".SumUpActivity"></activity>
     </application>
 
 </manifest>

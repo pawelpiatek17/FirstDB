@@ -1,0 +1,144 @@
+package com.example.pawe.firstdb;
+
+import android.content.ContentValues;
+import android.content.Intent;
+import android.database.Cursor;
+import android.database.sqlite.SQLiteDatabase;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
+import android.net.Uri;
+import android.os.Environment;
+import android.provider.MediaStore;
+import android.support.v4.content.FileProvider;
+import android.support.v7.app.AppCompatActivity;
+import android.os.Bundle;
+import android.util.Log;
+import android.view.View;
+import android.widget.Button;
+import android.widget.ImageButton;
+import android.widget.ImageView;
+
+import com.bumptech.glide.Glide;
+
+import java.io.File;
+import java.io.IOException;
+import java.text.SimpleDateFormat;
+import java.util.Date;
+
+public class AddImageActivity extends AppCompatActivity {
+
+    private final String TAG = "AddImageActivity";
+    static final int REQUEST_IMAGE_CAPTURE = 1;
+    private String photoPath;
+    private String oldPhotoPath;
+    Boolean flag;
+    DBDbHelper mDbHelper = new DBDbHelper(this);
+    Cursor cursor;
+    Intent intent;
+    Long id;
+
+    @Override
+    protected void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        setContentView(R.layout.activity_add_image);
+        intent = getIntent();
+        photoPath = "";
+        oldPhotoPath = " ";
+        flag = intent.getBooleanExtra(MainActivity.ISEDIT_EXTRA,false);
+        if(flag){
+            ImageView imageViewZdj = (ImageView)findViewById(R.id.imageView_showCapturedImage);
+            id = intent.getLongExtra(MainActivity.EDIT_ID_EXTRA,0);
+            SQLiteDatabase db = mDbHelper.getReadableDatabase();
+            String[] projection = {
+                    DBContract.DB._ID,
+                    DBContract.DB.COLUMN_IMAGE_PATH
+            };
+            String selection = DBContract.DB._ID + " = ?";
+            String[] selectionArgs = { Long.toString(id) };
+            String sortOrder = DBContract.DB._ID + " DESC";
+            cursor = db.query(
+                    DBContract.DB.TABLE_PERSONS,
+                    projection,
+                    selection,
+                    selectionArgs,
+                    null,
+                    null,
+                    sortOrder
+            );
+            cursor.moveToFirst();
+            oldPhotoPath = cursor.getString(cursor.getColumnIndex(DBContract.DB.COLUMN_IMAGE_PATH));
+            photoPath = oldPhotoPath;
+            Glide.with(this).load(cursor.getString(cursor.getColumnIndex(DBContract.DB.COLUMN_IMAGE_PATH))).into(imageViewZdj);
+        }
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+    }
+
+    private File createImageFile() throws IOException {
+        String timeStamp = new SimpleDateFormat("yyyyMMdd_HHmmss").format(new Date());
+        String imageFileName = "JPEG_" + timeStamp + "_";
+        File storageDir = getExternalFilesDir(Environment.DIRECTORY_PICTURES);
+        File image = File.createTempFile(
+                imageFileName,
+                ".jpg",
+                storageDir
+        );
+        photoPath = image.getAbsolutePath();
+        Log.e(TAG,"createImageFile : " + photoPath);
+        return image;
+    }
+
+    public void takePhoto(View view) {
+        Intent takePhotoIntent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
+        if(takePhotoIntent.resolveActivity(getPackageManager())!= null){
+            File photoFile = null;
+            try {
+                photoFile = createImageFile();
+            }
+            catch (IOException ex) {
+                Log.e(TAG,"takePhoto exception: "+ ex.toString());
+            }
+            if(photoFile != null) {
+                Uri photoURI = FileProvider.getUriForFile(this,
+                        "com.example.android.fileprovider",
+                        photoFile);
+                takePhotoIntent.putExtra(MediaStore.EXTRA_OUTPUT,photoURI);
+                startActivityForResult(takePhotoIntent, REQUEST_IMAGE_CAPTURE);
+            }
+        }
+    }
+
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+        if(requestCode == REQUEST_IMAGE_CAPTURE && resultCode == RESULT_OK){
+            Log.e(TAG,"onActivityResult: "+ "REQUEST_IMAGE_CAPTURE RESULT_OK ");
+            Glide.with(this).load(photoPath).into((ImageView)findViewById(R.id.imageView_showCapturedImage));
+        }
+        else if (requestCode == REQUEST_IMAGE_CAPTURE && resultCode == RESULT_CANCELED){
+            Log.e(TAG,"onActivityResult: "+ "REQUEST_IMAGE_CAPTURE RESULT_CANCELED ");
+            photoPath = " ";
+        }
+    }
+
+    public void Back(View view) {
+        finish();
+    }
+
+    public void continueClick(View view) {
+        Intent _intent = new Intent(this,SumUpActivity.class);
+        _intent.putExtra(MainActivity.OLD_PATH_EXTRA,oldPhotoPath);
+        _intent.putExtra(MainActivity.PATH_EXTRA,photoPath);
+        _intent.putExtra(MainActivity.FIRST_NAME_EXTRA,intent.getStringExtra(MainActivity.FIRST_NAME_EXTRA));
+        _intent.putExtra(MainActivity.LAST_NAME_EXTRA,intent.getStringExtra(MainActivity.LAST_NAME_EXTRA));
+        _intent.putExtra(MainActivity.DATE_EXTRA,intent.getStringExtra(MainActivity.DATE_EXTRA));
+        _intent.putExtra(MainActivity.EDIT_ID_EXTRA,intent.getLongExtra(MainActivity.EDIT_ID_EXTRA,-1));
+        _intent.putExtra(MainActivity.ISEDIT_EXTRA,intent.getBooleanExtra(MainActivity.ISEDIT_EXTRA,false));
+        startActivity(_intent);
+
+
+    }
+}
