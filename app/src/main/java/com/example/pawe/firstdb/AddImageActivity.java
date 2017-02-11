@@ -1,22 +1,19 @@
 package com.example.pawe.firstdb;
 
-import android.content.ContentValues;
 import android.content.Intent;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
-import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
 import android.net.Uri;
+import android.os.Bundle;
 import android.os.Environment;
+import android.os.PersistableBundle;
 import android.provider.MediaStore;
 import android.support.v4.content.FileProvider;
 import android.support.v7.app.AppCompatActivity;
-import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
-import android.widget.Button;
-import android.widget.ImageButton;
 import android.widget.ImageView;
+import android.widget.Toast;
 
 import com.bumptech.glide.Glide;
 
@@ -28,14 +25,14 @@ import java.util.Date;
 public class AddImageActivity extends AppCompatActivity {
 
     private final String TAG = "AddImageActivity";
-    static final int REQUEST_IMAGE_CAPTURE = 1;
+    private static final int REQUEST_IMAGE_CAPTURE = 1;
     private String photoPath;
     private String oldPhotoPath;
-    Boolean flag;
-    DBDbHelper mDbHelper = new DBDbHelper(this);
-    Cursor cursor;
-    Intent intent;
-    Long id;
+    private Boolean flag;
+    private DBDbHelper mDbHelper = new DBDbHelper(this);
+    private Cursor cursor;
+    private Intent intent;
+    private Long id;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -70,11 +67,20 @@ public class AddImageActivity extends AppCompatActivity {
             photoPath = oldPhotoPath;
             Glide.with(this).load(cursor.getString(cursor.getColumnIndex(DBContract.DB.COLUMN_IMAGE_PATH))).into(imageViewZdj);
         }
+        if (savedInstanceState != null) {
+            photoPath = savedInstanceState.getString(MainActivity.PATH_EXTRA);
+            Log.e(TAG,"onCreate: photoPath = " + photoPath);
+            ImageView imageViewZdj = (ImageView)findViewById(R.id.imageView_showCapturedImage);
+            Glide.with(this).load(photoPath).into(imageViewZdj);
+
+        }
     }
 
+
     @Override
-    protected void onResume() {
-        super.onResume();
+    public void onSaveInstanceState(Bundle outState) {
+        outState.putString(MainActivity.PATH_EXTRA,photoPath);
+        super.onSaveInstanceState(outState);
     }
 
     private File createImageFile() throws IOException {
@@ -124,10 +130,6 @@ public class AddImageActivity extends AppCompatActivity {
         }
     }
 
-    public void Back(View view) {
-        finish();
-    }
-
     public void continueClick(View view) {
         Intent _intent = new Intent(this,SumUpActivity.class);
         _intent.putExtra(MainActivity.OLD_PATH_EXTRA,oldPhotoPath);
@@ -141,4 +143,15 @@ public class AddImageActivity extends AppCompatActivity {
 
 
     }
+
+    public void deletePhoto(View view) {
+        File file = new File(photoPath);
+        ImageView imageViewZdj = (ImageView) findViewById(R.id.imageView_showCapturedImage);
+        Glide.clear(imageViewZdj);
+        file.deleteOnExit();
+        Log.e(TAG, "deletePhoto: deleted");
+        oldPhotoPath = " ";
+        photoPath = "";
+    }
 }
+

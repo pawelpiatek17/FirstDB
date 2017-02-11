@@ -15,20 +15,20 @@
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:paddingBottom="5dp"
-            android:id="@+id/textView_firstName"
+            android:id="@+id/textView_firstName_listView"
             android:layout_weight="1"/>
         <TextView
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:paddingBottom="5dp"
-            android:id="@+id/textView_lastName"
+            android:id="@+id/textView_lastName_listView"
             android:layout_weight="1"/>
     </LinearLayout>
     <TextView
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:paddingBottom="5dp"
-        android:id="@+id/textView_date"
+        android:id="@+id/textView_date_listView"
         android:layout_below="@id/linearLayout_name"
         android:layout_marginTop="5dp"/>
     <ImageView
@@ -37,7 +37,7 @@
         android:maxHeight="250dp"
         android:minHeight="250dp"
         android:id="@+id/imageView_photo_listView"
-        android:layout_below="@id/textView_date"
+        android:layout_below="@id/textView_date_listView"
         android:layout_centerHorizontal="true"
         android:layout_marginTop="2dp"
         android:scaleType="fitCenter"

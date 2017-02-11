@@ -1,3 +1,14 @@
 <resources>
     <string name="app_name">FirstDB</string>
+    <string name="photoDeleted">Zdjęcie usunięte</string>
+    <string name="notEmptyField">To pole nie może być puste</string>
+    <string name="setBirthDate">Ustaw datę urodzenia</string>
+    <string name="edit">Edytuj</string>
+    <string name="delete">Usuń</string>
+    <string name="dataDeleted">Dane usunięte</string>
+    <string name="firstName">Imię</string>
+    <string name="lastName">Nazwisko</string>
+    <string name="dateOfBirth">Data urodzenia</string>
+    <string name="forward">Dalej</string>
+    <string name="update">Zaktualizuj</string>
 </resources>

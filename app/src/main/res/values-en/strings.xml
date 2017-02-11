@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">FirstDB</string>
+    <string name="dataDeleted">Data deleted</string>
+    <string name="dateOfBirth">Date of birth</string>
+    <string name="delete">Delete</string>
+    <string name="edit">Edit</string>
+    <string name="firstName">First name</string>
+    <string name="lastName">Last name</string>
+    <string name="forward">Continue</string>
+    <string name="notEmptyField">This field cant be empty</string>
+    <string name="photoDeleted">Photo deleted</string>
+    <string name="setBirthDate">Enter you\'r date of birth</string>
+    <string name="update">Update</string>
+</resources>

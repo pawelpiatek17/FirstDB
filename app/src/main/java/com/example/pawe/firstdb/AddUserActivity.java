@@ -1,38 +1,35 @@
 package com.example.pawe.firstdb;
 
 import android.app.DatePickerDialog;
+import android.content.Context;
 import android.content.Intent;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
-import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.support.v7.app.AppCompatActivity;
 import android.text.TextUtils;
-import android.util.Log;
 import android.view.View;
+import android.view.inputmethod.InputMethodManager;
 import android.widget.Button;
 import android.widget.DatePicker;
 import android.widget.EditText;
-import android.widget.Toast;
-
-import java.util.Calendar;
-import java.util.Date;
 
 public class AddUserActivity extends AppCompatActivity {
     private final String TAG = "AddUserActivity";
-    Boolean flag;
-    DBDbHelper mDbHelper = new DBDbHelper(this);
-    EditText editTextFirstName;
-    EditText editTextLastName;
-    EditText editTextDate;
-    DatePickerDialog datePickerDialog;
-    int day;
-    int month;
-    int year;
-    boolean isDateChanged = false;
-    SQLiteDatabase db;
-    Intent intent;
-    Cursor cursor;
-    Long id;
+    private Boolean flag;
+    private DBDbHelper mDbHelper = new DBDbHelper(this);
+    private EditText editTextFirstName;
+    private EditText editTextLastName;
+    private EditText editTextDate;
+    private DatePickerDialog datePickerDialog;
+    private int day;
+    private int month;
+    private int year;
+    private boolean isDateChanged = false;
+    private SQLiteDatabase db;
+    private Intent intent;
+    private Cursor cursor;
+    private Long id;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -42,7 +39,7 @@ public class AddUserActivity extends AppCompatActivity {
         if(flag){
             db = mDbHelper.getReadableDatabase();
             Button bt = (Button)findViewById(R.id.button_addUser);
-            bt.setText("Zaktualizuj");
+            bt.setText(R.string.update);
             editTextFirstName = (EditText)findViewById(R.id.editText_firstName);
             editTextLastName = (EditText)findViewById(R.id.editText_lastName);
             editTextDate = (EditText) findViewById(R.id.editText_date);
@@ -86,19 +83,12 @@ public class AddUserActivity extends AppCompatActivity {
             public void onFocusChange(View v, boolean hasFocus) {
                 if (hasFocus) {
                     datePickerDialog.show();
+                    InputMethodManager imm = (InputMethodManager)getSystemService(Context.INPUT_METHOD_SERVICE);
+                    imm.hideSoftInputFromWindow(editTextDate.getWindowToken(),
+                            InputMethodManager.RESULT_UNCHANGED_SHOWN);
                 }
             }
         });
-    }
-    @Override
-    protected void onStart() {
-        super.onStart();
-    }
-
-    @Override
-    protected void onResume() {
-        super.onResume();
-
     }
 
     private DatePickerDialog.OnDateSetListener onDateSetListener = new DatePickerDialog.OnDateSetListener() {
@@ -119,15 +109,13 @@ public class AddUserActivity extends AppCompatActivity {
         String lastName = editTextLastName.getText().toString();
         String date = editTextDate.getText().toString();
         if(TextUtils.isEmpty(firstName)){
-            //TODO zmienic na string resources (inne jezyki)
-            editTextFirstName.setError("To pole nie może być puste");
+            editTextFirstName.setError(getString(R.string.notEmptyField));
         }
         else if(TextUtils.isEmpty(lastName)){
-            //TODO zmienic na string resources (inne jezyki)
-            editTextLastName.setError("To pole nie może być puste");
+            editTextLastName.setError(getString(R.string.notEmptyField));
         }
         else if (!isDateChanged) {
-            editTextDate.setError("Ustaw datę urodzenia");
+            editTextDate.setError(getString(R.string.setBirthDate));
         }
         else{
             Intent _intent = new Intent(this,AddImageActivity.class);
@@ -138,5 +126,9 @@ public class AddUserActivity extends AppCompatActivity {
             _intent.putExtra(MainActivity.EDIT_ID_EXTRA,intent.getLongExtra(MainActivity.EDIT_ID_EXTRA,-1));
             startActivity(_intent);
         }
+    }
+
+    public void dateOnClick(View view) {
+        datePickerDialog.show();
     }
 }

@@ -3,10 +3,8 @@ package com.example.pawe.firstdb;
 import android.content.ContentValues;
 import android.content.Intent;
 import android.database.sqlite.SQLiteDatabase;
-import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
-import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.view.View;
 import android.widget.ImageView;
@@ -20,13 +18,13 @@ import java.util.Objects;
 public class SumUpActivity extends AppCompatActivity {
 
     private final String TAG = "SumUpActivity";
-    Intent intent;
-    String firstName;
-    String lastName;
-    String date;
-    String oldPhotoPath;
-    String photoPath;
-    DBDbHelper mDbHelper = new DBDbHelper(this);
+    private Intent intent;
+    private String firstName;
+    private String lastName;
+    private String date;
+    private String oldPhotoPath;
+    private String photoPath;
+    private DBDbHelper mDbHelper = new DBDbHelper(this);
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -49,7 +47,7 @@ public class SumUpActivity extends AppCompatActivity {
         textViewFirstName.setText(firstName);
         textViewLastName.setText(lastName);
         textViewDate.setText(date);
-        if (!Objects.equals(photoPath, "")) {
+        if (!photoPath.equals("")) {
             Glide.with(this).load(photoPath).into(imageViewShowCapturedImage);
             Log.e(TAG,"loadDataToViews : " + photoPath);
         }
@@ -72,7 +70,7 @@ public class SumUpActivity extends AppCompatActivity {
             String[] selectionArgs = {Long.toString(id)};
             Log.e(TAG,"addToDatabaseOnClick : update ");
             db.update(DBContract.DB.TABLE_PERSONS, values, selection, selectionArgs);
-            if (!Objects.equals(oldPhotoPath, photoPath)) {
+            if (!photoPath.equals(oldPhotoPath)) {
                 Log.e(TAG,"addToDatabaseOnClick : delete file  " + oldPhotoPath);
                 File f = new File(oldPhotoPath);
                 f.delete();

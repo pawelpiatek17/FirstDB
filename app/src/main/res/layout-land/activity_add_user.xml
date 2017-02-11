@@ -30,23 +30,22 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:inputType="none"
-        android:editable="false"
         android:id="@+id/editText_date"
         android:layout_below="@id/editText_lastName"
         android:textSize="20sp"
+        android:editable="false"
         android:hint="@string/dateOfBirth"
-        android:onClick="dateOnClick"
-        android:paddingStart="3dp" />
+        android:onClick="dateOnClick" />
 
     <Button
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:text="@string/forward"
-        android:textSize="35sp"
+        android:textSize="45sp"
         android:onClick="continueClick"
         android:id="@+id/button_addUser"
+        android:padding="5dp"
         android:layout_alignParentBottom="true"
-        android:layout_centerHorizontal="true"
-        android:padding="2dp"/>
+        android:layout_centerHorizontal="true" />
 
 </RelativeLayout>
