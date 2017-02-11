@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="app_name">FirstDB</string>
+    <string name="app_name">Zbieracz danych</string>
     <string name="dataDeleted">Data deleted</string>
     <string name="dateOfBirth">Date of birth</string>
     <string name="delete">Delete</string>

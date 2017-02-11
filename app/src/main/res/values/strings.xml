@@ -1,5 +1,5 @@
 <resources>
-    <string name="app_name">FirstDB</string>
+    <string name="app_name">Zbieracz danych</string>
     <string name="photoDeleted">Zdjęcie usunięte</string>
     <string name="notEmptyField">To pole nie może być puste</string>
     <string name="setBirthDate">Ustaw datę urodzenia</string>
